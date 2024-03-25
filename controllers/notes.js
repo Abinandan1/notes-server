@@ -1,17 +1,64 @@
-const getAllNotes = (req, res) => {
-  res.send("Get all notes");
+const { StatusCodes } = require("http-status-codes");
+const Notes = require("../models/Notes");
+const { NotFoundError } = require("../errors");
+
+const getAllNotes = async (req, res) => {
+  const {
+    user: { userId },
+  } = req;
+  const notes = await Notes.find({ createdBy: userId, archive: false });
+  res.status(StatusCodes.OK).json({ count: notes.length, notes });
 };
-const getNote = (req, res) => {
-  res.send("Get note");
+const getNote = async (req, res) => {
+  const {
+    params: { id: noteId },
+    user: { userId },
+  } = req;
+  const note = await Notes.findOne({
+    createdBy: userId,
+    _id: noteId,
+  });
+  if (!note) {
+    throw new NotFoundError(`No note found with id ${noteId}`);
+  }
+  res.status(StatusCodes.OK).json({ note });
 };
-const createNote = (req, res) => {
-  res.send("Create note");
+const createNote = async (req, res) => {
+  req.body.createdBy = req.user.userId;
+  const note = await Notes.create({ ...req.body });
+  res.status(StatusCodes.CREATED).json(note);
 };
-const updateNote = (req, res) => {
-  res.send("Update note");
+const updateNote = async (req, res) => {
+  const {
+    user: { userId },
+    params: { id: noteId },
+  } = req;
+  const note = await Notes.findOneAndUpdate(
+    {
+      createdBy: userId,
+      _id: noteId,
+    },
+    { ...req.body },
+    { new: true }
+  );
+  if (!note) {
+    throw new NotFoundError(`No note found with id ${noteId}`);
+  }
+  res.status(StatusCodes.OK).json({ note });
 };
-const deleteNote = (req, res) => {
-  res.send("Delete note");
+const deleteNote = async (req, res) => {
+  const {
+    user: { userId },
+    params: { id: noteId },
+  } = req;
+  const note = await Notes.findOneAndDelete({
+    createdBy: userId,
+    _id: noteId,
+  });
+  if (!note) {
+    throw new NotFoundError(`No note found with id ${noteId}`);
+  }
+  res.status(StatusCodes.OK).json({ note });
 };
 
 module.exports = {

@@ -1,3 +1,4 @@
+const { number } = require("joi");
 const mongoose = require("mongoose");
 const NoteSchema = new mongoose.Schema(
   {
@@ -12,10 +13,14 @@ const NoteSchema = new mongoose.Schema(
       ref: "User",
       required: [true, "Please provide user"],
     },
+    archive: {
+      type: Boolean,
+      default: false,
+    },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
 module.exports = mongoose.model("Note", NoteSchema);
-
-module.exports = mongoose.model("User", UserSchema);

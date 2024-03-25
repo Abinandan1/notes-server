@@ -7,6 +7,7 @@ const UserSchema = new mongoose.Schema({
     required: [true, "Please provide username"],
     minlength: 3,
     maxlength: 50,
+    unique: [true, "The username is already taken"],
   },
   password: {
     type: String,
@@ -30,9 +31,14 @@ UserSchema.methods.generateToken = function () {
     { userId: this._id, username: this.username },
     process.env.JWT_SECRET,
     {
-      expiresIn: JWT_LIFETIME,
+      expiresIn: process.env.JWT_LIFETIME,
     }
   );
+};
+
+UserSchema.methods.comparePasswords = async function (password) {
+  const passwordsMatch = await bcrypt.compare(password, this.password);
+  return passwordsMatch;
 };
 
 module.exports = mongoose.model("User", UserSchema);
