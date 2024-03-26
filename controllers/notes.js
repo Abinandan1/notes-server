@@ -3,10 +3,13 @@ const Notes = require("../models/Notes");
 const { NotFoundError } = require("../errors");
 
 const getAllNotes = async (req, res) => {
+  const archive = JSON.parse(req.query.archive);
+  req.body.archive = archive;
+  console.log(req.body);
   const {
     user: { userId },
   } = req;
-  const notes = await Notes.find({ createdBy: userId, archive: false });
+  const notes = await Notes.find({ createdBy: userId, ...req.body });
   res.status(StatusCodes.OK).json({ count: notes.length, notes });
 };
 const getNote = async (req, res) => {
